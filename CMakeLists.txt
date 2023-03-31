@@ -55,6 +55,7 @@ include(openssl)
 include(zlib)
 include(gflags)
 include(glog)
+include(spdlog)
 include(gtest)
 include(snappy)
 include(lz4)
@@ -115,6 +116,7 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${BRAFT_INCLUDE_DIR})
 include_directories(${BRPC_INCLUDE_DIR})
 include_directories(${GLOG_INCLUDE_DIR})
+include_directories(${SPDLOG_INCLUDE_DIR})
 include_directories(${GTEST_INCLUDE_DIR})
 include_directories(${GFLAGS_INCLUDE_DIR})
 include_directories(${ROCKSDB_INCLUDE_DIR})
@@ -138,6 +140,7 @@ set(DYNAMIC_LIB
     ${OPENSSL_LIBRARIES}
     ${CRYPTO_LIBRARIES}
     ${GLOG_LIBRARIES}
+    ${SPDLOG_LIBRARIES}
     ${GTEST_MAIN_LIBRARIES}
     ${GTEST_LIBRARIES}
     ${LIBUNWIND_LIBRARIES}
@@ -180,6 +183,7 @@ file(GLOB STORE_SRCS ${PROJECT_SOURCE_DIR}/src/store/*.cc)
 file(GLOB SERVER_SRCS ${PROJECT_SOURCE_DIR}/src/server/*.cc)
 
 list(REMOVE_ITEM SERVER_SRCS "${PROJECT_SOURCE_DIR}/src/server/main.cc")
+list(REMOVE_ITEM SERVER_SRCS "${PROJECT_SOURCE_DIR}/src/server/huzx.cc")
 
 # object file
 add_library(DINGODB_OBJS
@@ -200,6 +204,7 @@ add_library(DINGODB_OBJS
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
 
 add_executable(dingodb_server src/server/main.cc $<TARGET_OBJECTS:DINGODB_OBJS> $<TARGET_OBJECTS:PROTO_OBJS>)
+add_executable(dingodb_huzx src/server/huzx.cc $<TARGET_OBJECTS:DINGODB_OBJS> $<TARGET_OBJECTS:PROTO_OBJS>)
 add_executable(dingodb_client_store src/client/store_client.cc $<TARGET_OBJECTS:PROTO_OBJS>)
 add_executable(dingodb_client_coordinator src/client/coordinator_client.cc $<TARGET_OBJECTS:PROTO_OBJS>)
 add_executable(dingodb_client_meta src/client/meta_client.cc $<TARGET_OBJECTS:PROTO_OBJS>)
@@ -207,6 +212,7 @@ add_executable(dingodb_client_meta src/client/meta_client.cc $<TARGET_OBJECTS:PR
 
 add_dependencies(DINGODB_OBJS ${DEPEND_LIBS})
 add_dependencies(dingodb_server ${DEPEND_LIBS})
+add_dependencies(dingodb_huzx ${DEPEND_LIBS})
 add_dependencies(dingodb_client_store ${DEPEND_LIBS})
 add_dependencies(dingodb_client_coordinator ${DEPEND_LIBS})
 add_dependencies(dingodb_client_meta ${DEPEND_LIBS})
@@ -217,6 +223,10 @@ if(DINGO_BUILD_STATIC)
 endif()
 
 target_link_libraries(dingodb_server
+                      "-Xlinker \"-(\""
+                      ${DYNAMIC_LIB}
+                      "-Xlinker \"-)\"")
+target_link_libraries(dingodb_huzx
                       "-Xlinker \"-(\""
                       ${DYNAMIC_LIB}
                       "-Xlinker \"-)\"")

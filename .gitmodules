@@ -44,3 +44,6 @@
 	path = contrib/libunwind
 	url = https://github.com/dingodb/libunwind
 	branch = v1.6.2-patched
+[submodule "contrib/spdlog"]
+	path = contrib/spdlog
+	url = https://github.com/gabime/spdlog.git
